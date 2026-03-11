@@ -1,6 +1,4 @@
 // TaskDelegate.qml
-pragma ComponentBehavior: Bound
-
 import QtQuick
 import QtQuick.Controls
 
@@ -12,6 +10,9 @@ Item {
     required property int index
     required property int visualIndex
     property ListView view: ListView.view
+    property bool itemsMoving: true
+
+    signal startMove()
     signal moveItem(int from, int to)
 
     Rectangle {
@@ -27,7 +28,7 @@ Item {
             when: dragArea.held
             ParentChange {
                 target: content
-                parent: content.Window.contentItem
+                parent: content.Window?.contentItem ? content.Window.contentItem : content.parent
             }
             PropertyChanges {
                 content {
@@ -58,20 +59,23 @@ Item {
                 property real heldY: 0
 
                 onPressed: (mouse) => {
-                    let globalPos = delegateRoot.mapToItem(Window.contentItem, 0, 0)
+                    let contentItem = content.Window?.contentItem
+                    let globalPos = delegateRoot.mapToItem(
+                        contentItem ? contentItem : delegateRoot, 0, 0)
                     heldY = globalPos.y
                     held = true
-                    delegateRoot.view.dragActive = true
+                    delegateRoot.startMove()
+                    delegateRoot.view.draggingItem = true
                 }
                 onReleased: {
                     held = false
-                    delegateRoot.view.dragActive = false
+                    delegateRoot.view.draggingItem = false
                 }
 
                 drag.target: content
                 drag.axis: Drag.YAxis
                 drag.minimumY: 0
-                drag.maximumY: Window.height - content.height
+                drag.maximumY: content.Window?.height ? content.Window.height - content.height : 10000
             }
         }
 
@@ -87,16 +91,19 @@ Item {
         Drag.source: delegateRoot
         Drag.hotSpot.x: width / 2
         Drag.hotSpot.y: height / 2
-        Drag.keys: ["task-item"]
+        Drag.keys: [delegateRoot.view.dragDropKey]
     }
 
     DropArea {
         anchors.fill: parent
-        keys: ["task-item"]
+        keys: [delegateRoot.view.dragDropKey]
         onEntered: (drag) => {
+            if (!delegateRoot.itemsMoving)
+                return;
+
             let from = drag.source.visualIndex
             let to = delegateRoot.visualIndex
-
+            console.log("DropArea", to, "entered by index", from)
             if (from !== to) {
                 delegateRoot.moveItem(from, to)
             }

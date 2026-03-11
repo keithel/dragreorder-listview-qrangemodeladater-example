@@ -20,6 +20,7 @@ TaskBackend::TaskBackend(QObject *parent)
     : QObject(parent)
     , m_adapter(std::ref(s_data))
 {
+    qDebug() << m_adapter.range();
 }
 
 QAbstractItemModel* TaskBackend::taskModel() const
@@ -31,5 +32,7 @@ void TaskBackend::moveTask(int from, int to)
 {
     qDebug().noquote().nospace() << "TaskBackend::moveTask(" << from << ", " << to << ")";
     if (from == to) return;
-    m_adapter.moveRows(from, 1, to > from ? to + 1 : to);
+    qDebug() << "Moving task" << m_adapter.range()[from]->description() << "at index" << from << "to index" << to;
+    bool rowMoved = m_adapter.moveRow(from, to > from ? to + 1 : to);
+    qDebug() << "Row moved?" << rowMoved << "adapter data:" << m_adapter.range();
 }
