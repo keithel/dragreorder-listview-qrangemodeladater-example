@@ -144,7 +144,7 @@ drag, creating an immediate but temporary effect.
 
 ---
 
-## Step 6 — Commit drop to the C++ model (this commit)
+## Step 6 — Commit drop to the C++ model
 
 **What's here:** wiring the drag-and-drop result back to the C++ data layer,
 and registering `TaskItem` properties as named model roles.
@@ -189,3 +189,40 @@ template<> struct QRangeModel::RowOptions<TaskItem>
 
 After this step, the application is fully functional: items dragged in the
 list are reordered both visually and in the C++ model.
+
+---
+
+## Step 7 — Commit-on-release (this commit)
+
+**What's here:** This introduces commit of the item move after it is dragged
+through the list. The item being dragged through the list updates the visual
+model without updating the underlying backend model.
+
+DelegateModel move calls are used to show the item moves and where it will be
+committed to. When the user releases drag, then the change is committed to the
+underlying model.
+
+### The problem this solves
+
+In the last step, `moveRequested` was emitted on every `DropArea.onEntered`
+event, so the C++ model was updated many times during a single drag. This is not
+optimal performance wise, especially if there is complex logic that occurs in
+the backend when the model changes (not in this case, but there might be in some
+real-world scenarios).
+
+### TaskListView changes:
+- Replace `moveRequested` with `commitMove` — emitted once, when dragging ends.
+- Track `dragSourceIndex` (set at drag start) and `dragTargetIndex` (updated on
+  each visual move). The `onDraggingItemChanged` handler fires `commitMove` only
+  when `draggingItem` becomes `false` (i.e. on release).
+- `dragDropKey`: a unique ID generated per `ListView` instance so `Drag.keys`
+  and `DropArea.keys` match only within the same list, preventing conflicts in
+  multi-list layouts.
+
+### TaskDelegate changes:
+- `startMove()` signal lets the `ListView` record `dragSourceIndex` at the
+  moment the drag begins.
+- Optional chaining (`?.`) on `Window` properties for safer access.
+
+### TaskBackend changes:
+- Switches from `moveRows(from, 1, to)` to `moveRow(from, to)`.
