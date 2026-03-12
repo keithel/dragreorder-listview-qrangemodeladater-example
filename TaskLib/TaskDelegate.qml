@@ -10,6 +10,7 @@ Item {
     required property int index
     required property int visualIndex
     property ListView view: ListView.view
+    property alias held: dragArea.held
 
     signal startMove()
     signal moveItem(int from, int to)
@@ -22,6 +23,11 @@ Item {
         y: 0
         color: "white"
         border.color: "#ccc"
+
+        function cancelDrag() {
+            dragArea.held = false
+            delegateRoot.view.draggingItem = false
+        }
 
         states: State {
             when: dragArea.held
@@ -67,6 +73,13 @@ Item {
                     delegateRoot.view.draggingItem = true
                 }
                 onReleased: {
+                    if (!held) {
+                        // If it is not held on release, cancel was performed
+                        // and the item can still have been dragged around.
+                        // Return the item to it's proper y position.
+                        content.y = 0
+                    }
+
                     held = false
                     delegateRoot.view.draggingItem = false
                 }
@@ -97,12 +110,29 @@ Item {
         anchors.fill: parent
         keys: [delegateRoot.view.dragDropKey]
         onEntered: (drag) => {
+            if (!delegateRoot.view.draggingItem)
+                return;
+
             let from = drag.source.visualIndex
             let to = delegateRoot.visualIndex
             console.log("DropArea", to, "entered by index", from)
-            if (from !== to) {
+            if (drag.source.held && from !== to) {
                 delegateRoot.moveItem(from, to)
             }
+        }
+    }
+
+    // Watch for drag cancel from the ListView and cancel the drag if needed
+    Connections {
+        target: delegateRoot.view
+        function onDragCanceledChanged() {
+            if (delegateRoot.view.dragCanceled && dragArea.held) {
+                cancelTimer.start();
+            }
+        }
+        property Timer cancelTimer: Timer {
+            interval: 0
+            onTriggered: content.cancelDrag()
         }
     }
 }
