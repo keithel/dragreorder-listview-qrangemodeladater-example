@@ -21,6 +21,5 @@ public:
     Q_INVOKABLE void moveTask(int from, int to);
 
 private:
-    std::vector<TaskItem*> m_data;
     QRangeModelAdapter<std::vector<TaskItem*>> m_adapter;
 };
