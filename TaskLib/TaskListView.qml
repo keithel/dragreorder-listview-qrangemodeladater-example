@@ -3,7 +3,6 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQml.Models
-import QtQuick.Layouts
 
 Item {
     id: root
@@ -18,53 +17,57 @@ Item {
             visualIndex: DelegateModel.itemsIndex
             listView: listView
 
-            onMoveItem: (from, to) => {
-                visualModel.items.move(from, to)
+            onStartMove: {
+                dropPlaceholder.y = y
+                listView.dragSourceIndex = index
             }
-            onCommitMove: (from, to) => {
-                console.log("Committing move from", from, "to", to)
-                ListView.view.commitMove(from, to)
+            onMoveItem: (from, to) => {
+                dropPlaceholder.y = y
+                visualModel.items.move(from, to)
+                listView.dragTargetIndex = to
             }
         }
     }
 
-    ColumnLayout {
+    ListView {
+        id: listView
         anchors.fill: parent
-        spacing: 0
-        ListViewDropPlaceholder {
-            listView: listView
-            Layout.fillWidth: true
+
+        function generateId() {
+            // Uses the current time in milliseconds + a 4-digit random number
+            return Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
         }
 
-        ListView {
-            id: listView
+        property bool draggingItem: false
+        property int dragSourceIndex: -1
+        property int dragTargetIndex: -1
+        property string dragDropKey
 
-            function generateId() {
-                // Uses the current time in milliseconds + a 4-digit random number
-                return Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
-            }
-
-            signal moveRequested(int from, int to)
-            signal commitMove(int from, int to)
-            property bool draggingItem: false
-            property string dragDropKey
-
-            Component.onCompleted: dragDropKey = generateId()
-
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            interactive: !draggingItem
-
-            model: visualModel
-            displaced: Transition {
-                NumberAnimation { properties: "y"; duration: 200; easing.type: Easing.OutQuad }
-            }
-
-            onCommitMove: (from, to) => { root.commitMove(from, to) }
+        interactive: !draggingItem
+        model: visualModel
+        displaced: Transition {
+            NumberAnimation { properties: "y"; duration: 200; easing.type: Easing.OutQuad }
         }
-        ListViewDropPlaceholder {
-            listView: listView
-            Layout.fillWidth: true
+        z: 1
+
+        Component.onCompleted: dragDropKey = generateId()
+        onDraggingItemChanged: {
+            if (draggingItem)
+                return;
+            dropPlaceholder.y = -100
+            console.log("Committing move from", dragSourceIndex, "to", dragTargetIndex)
+            root.commitMove(dragSourceIndex, dragTargetIndex)
+            dragSourceIndex = -1
+            dragTargetIndex = -1
         }
+    }
+
+    ListViewDropPlaceholder {
+        id: dropPlaceholder
+        y: -100
+        listView: listView
+        anchors.left: parent.left
+        anchors.right: parent.right
+        // z:100
     }
 }

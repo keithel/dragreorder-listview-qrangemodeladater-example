@@ -13,8 +13,8 @@ Item {
     required property int visualIndex
     required property var listView
 
+    signal startMove()
     signal moveItem(int from, int to)
-    signal commitMove(int from, int to)
 
     Rectangle {
         id: content
@@ -60,6 +60,7 @@ Item {
                     let globalPos = delegateRoot.mapToItem(Window.window.contentItem, 0, 0)
                     heldY = globalPos.y
                     held = true
+                    delegateRoot.startMove()
                     delegateRoot.listView.draggingItem = true
                 }
                 onReleased: {
@@ -99,14 +100,6 @@ Item {
             console.log("DropArea", to, "entered by index", from)
             if (from !== to) {
                 delegateRoot.moveItem(from, to)
-            }
-        }
-        onDropped: (drop) => {
-            let from = drop.source.visualIndex;
-            let to = delegateRoot.visualIndex;
-            console.log("Dropped", from, "onto", to)
-            if (from !== to) {
-                delegateRoot.commitMove(from, to);
             }
         }
     }
