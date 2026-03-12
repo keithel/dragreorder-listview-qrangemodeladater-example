@@ -38,11 +38,17 @@ Item {
         property int dragSourceIndex: -1
         property int dragTargetIndex: -1
         property string dragDropKey
+        property int dragDuration: 200
 
         interactive: !draggingItem
         model: visualModel
+
         displaced: Transition {
-            NumberAnimation { properties: "y"; duration: 200; easing.type: Easing.OutQuad }
+            SequentialAnimation {
+                PropertyAction { property: "itemsMoving"; value: false }
+                NumberAnimation { properties: "y"; duration: listView.dragDuration; easing.type: Easing.OutQuad }
+                PropertyAction { property: "itemsMoving"; value: true }
+            }
         }
 
         Component.onCompleted: dragDropKey = generateId()

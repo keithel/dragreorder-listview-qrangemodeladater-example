@@ -1,9 +1,14 @@
 # Drag-Reorder ListView Example with QRangeModelAdapter
 
-This project demonstrates how to implement drag-and-drop reordering in a Qt Quick ListView using the new `QRangeModelAdapter` introduced in Qt 6.11. It provides a minimal, practical example for developers looking to enable dynamic item reordering in their QML ListViews, leveraging modern Qt model/view patterns.
+This project demonstrates how to implement drag-and-drop reordering in a Qt Quick ListView using the new `QRangeModelAdapter` introduced in Qt 6.11. It illustrates how to animate the reorder as the user drags, uses DelegateModel to visualize the dragged item move in a visual model before committing it to the underlying model on release.
+
+It provides a minimal, practical example for developers looking to enable dynamic item reordering in their QML ListViews, leveraging modern Qt model/view patterns.
 
 ## Features
 - Drag-and-drop reordering: Users can drag items to reorder them in the ListView.
+- Animation of insertion point on drag, including logic to prevent improper
+moves due to animation.
+- Commit only happens once the item drag is complete.
 - QRangeModelAdapter usage: Showcases how to use the new adapter for efficient model/view integration.
 - Modular C++/QML structure: Clean separation between backend logic and QML UI.
 

@@ -12,6 +12,7 @@ Item {
     required property int index
     required property int visualIndex
     required property var listView
+    property bool itemsMoving: true
 
     signal startMove()
     signal moveItem(int from, int to)
@@ -29,7 +30,7 @@ Item {
             when: dragArea.held
             ParentChange {
                 target: content
-                parent: content.Window.window.contentItem
+                parent: content.Window?.contentItem ? content.Window.contentItem : content.parent
             }
             PropertyChanges {
                 content {
@@ -57,7 +58,9 @@ Item {
                 property real heldY: 0
 
                 onPressed: (mouse) => {
-                    let globalPos = delegateRoot.mapToItem(Window.window.contentItem, 0, 0)
+                    let contentItem = content.Window?.contentItem
+                    let globalPos = delegateRoot.mapToItem(
+                        contentItem ? contentItem : delegateRoot, 0, 0)
                     heldY = globalPos.y
                     held = true
                     delegateRoot.startMove()
@@ -71,7 +74,7 @@ Item {
                 drag.target: content
                 drag.axis: Drag.YAxis
                 drag.minimumY: 0
-                drag.maximumY: Window.window.height - content.height
+                drag.maximumY: content.Window?.height ? content.Window.height - content.height : 10000
             }
         }
 
@@ -94,6 +97,9 @@ Item {
         anchors.fill: parent
         keys: [delegateRoot.listView.dragDropKey]
         onEntered: (drag) => {
+            if (!delegateRoot.itemsMoving)
+                return;
+
             let from = drag.source.visualIndex
             let to = delegateRoot.visualIndex
             console.log("DropArea", to, "entered by index", from)
