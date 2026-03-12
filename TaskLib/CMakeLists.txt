@@ -10,6 +10,5 @@ qt_add_qml_module(TaskLib
     QML_FILES
         TaskListView.qml
         TaskDelegate.qml
-        ListViewDropPlaceholder.qml
 )
 target_link_libraries(TaskLib PRIVATE Qt6::Core Qt6::Quick Qt6::Qml)

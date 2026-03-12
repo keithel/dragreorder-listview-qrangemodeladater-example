@@ -17,12 +17,8 @@ Item {
             visualIndex: DelegateModel.itemsIndex
             listView: listView
 
-            onStartMove: {
-                dropPlaceholder.y = y
-                listView.dragSourceIndex = index
-            }
+            onStartMove: listView.dragSourceIndex = index
             onMoveItem: (from, to) => {
-                dropPlaceholder.y = y
                 visualModel.items.move(from, to)
                 listView.dragTargetIndex = to
             }
@@ -48,26 +44,15 @@ Item {
         displaced: Transition {
             NumberAnimation { properties: "y"; duration: 200; easing.type: Easing.OutQuad }
         }
-        z: 1
 
         Component.onCompleted: dragDropKey = generateId()
         onDraggingItemChanged: {
             if (draggingItem)
                 return;
-            dropPlaceholder.y = -100
             console.log("Committing move from", dragSourceIndex, "to", dragTargetIndex)
             root.commitMove(dragSourceIndex, dragTargetIndex)
             dragSourceIndex = -1
             dragTargetIndex = -1
         }
-    }
-
-    ListViewDropPlaceholder {
-        id: dropPlaceholder
-        y: -100
-        listView: listView
-        anchors.left: parent.left
-        anchors.right: parent.right
-        // z:100
     }
 }

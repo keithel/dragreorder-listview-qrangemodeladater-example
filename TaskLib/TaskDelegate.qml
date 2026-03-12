@@ -67,7 +67,6 @@ Item {
                     held = false
                     delegateRoot.listView.draggingItem = false
                 }
-                // onHeldChanged: console.log("Delegate", delegateRoot.index, (held ? "held" : "not held"))
 
                 drag.target: content
                 drag.axis: Drag.YAxis
