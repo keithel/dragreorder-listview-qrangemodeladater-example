@@ -8,6 +8,7 @@ Item {
     required property int index
     required property int visualIndex
     property ListView view: ListView.view
+    property alias held: dragArea.active
 
     signal startMove()
     signal moveItem(int from, int to)
@@ -22,6 +23,10 @@ Item {
         y: 0
         color: "white"
         border.color: "#ccc"
+
+        function cancelDrag() {
+            delegateRoot.view.draggingItem = false
+        }
 
         states: State {
             when: dragArea.active
@@ -66,6 +71,13 @@ Item {
                         delegateRoot.ListView.view.draggingItem = true
                     }
                     else {
+                        if (!delegateRoot.view.draggingItem) {
+                            // If listView is not dragging item on release,
+                            // cancel was performed and the item can still have
+                            // been dragged around. Return the item to its
+                            // proper y position.
+                            content.y = 0
+                        }
                         delegateRoot.view.draggingItem = false
                     }
                 }
@@ -97,12 +109,29 @@ Item {
         anchors.fill: parent
         keys: [delegateRoot.view.dragDropKey]
         onEntered: (drag) => {
+            if (!delegateRoot.view.draggingItem)
+                return;
+
             let from = drag.source.visualIndex
             let to = delegateRoot.visualIndex
             console.log("DropArea", to, "entered by index", from)
-            if (from !== to) {
+            if (drag.source.held && from !== to) {
                 delegateRoot.moveItem(from, to)
             }
+        }
+    }
+
+    // Watch for drag cancel from the ListView and cancel the drag if needed
+    Connections {
+        target: delegateRoot.view
+        function onDragCanceledChanged() {
+            if (delegateRoot.view.dragCanceled && dragArea.active) {
+                cancelTimer.start();
+            }
+        }
+        property Timer cancelTimer: Timer {
+            interval: 0
+            onTriggered: content.cancelDrag()
         }
     }
 }
