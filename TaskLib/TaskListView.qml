@@ -13,10 +13,16 @@ Item {
             width: ListView.view.width
             visualIndex: DelegateModel.itemsIndex
 
-            onStartMove: ListView.view.dragSourceIndex = index
+            onStartMove: {
+                listView.dragSourceIndex = index
+                // Start tracking moves
+                listView.dragMoves = []
+            }
             onMoveItem: (from, to) => {
                 visualModel.items.move(from, to)
                 listView.dragTargetIndex = to
+                // Track the move
+                listView.dragMoves.push({from: from, to: to})
             }
         }
     }
@@ -24,6 +30,25 @@ Item {
     ListView {
         id: listView
         anchors.fill: parent
+
+        Keys.onReleased: (event) => {
+            if (draggingItem && event.key === Qt.Key_Escape) {
+                // Cancel drag: replay moves in reverse to restore original order
+                dragCanceled = true;
+                if (dragMoves && dragMoves.length > 0) {
+                    for (let i = dragMoves.length - 1; i >= 0; --i) {
+                        let move = dragMoves[i];
+                        visualModel.items.move(move.to, move.from);
+                    }
+                }
+                draggingItem = false;
+                dragSourceIndex = -1;
+                dragTargetIndex = -1;
+                dragMoves = [];
+                event.accepted = true;
+            }
+        }
+        focus: true
 
         function generateId() {
             // Uses the current time in milliseconds + a 4-digit random number
@@ -35,6 +60,8 @@ Item {
         property int dragTargetIndex: -1
         property string dragDropKey
         property int dragDuration: 200
+        property bool dragCanceled: false
+        property var dragMoves: []
 
         interactive: !draggingItem
         model: visualModel
@@ -51,8 +78,16 @@ Item {
         onDraggingItemChanged: {
             if (draggingItem)
                 return;
-            console.log("Committing move from", dragSourceIndex, "to", dragTargetIndex)
-            root.commitMove(dragSourceIndex, dragTargetIndex)
+
+            if (dragCanceled) {
+                dragCanceled = false;
+                dragMoves = [];
+            } else {
+                console.log("Committing move from", dragSourceIndex, "to", dragTargetIndex)
+                root.commitMove(dragSourceIndex, dragTargetIndex)
+                dragMoves = [];
+            }
+
             dragSourceIndex = -1
             dragTargetIndex = -1
         }

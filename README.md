@@ -259,3 +259,29 @@ real-world scenarios).
 
 **`TaskBackend` changes:**
 - Switches from `moveRows(from, 1, to)` to `moveRow(from, to)`.
+
+---
+
+## Step 9 — Drag cancellation via Escape key (this commit)
+
+**What's here:** Allow the user to cancel an in-progress drag by pressing <ESC>,
+restoring the list to its pre-drag order.
+
+### How it works
+
+Each visual move during a drag is recorded in `dragMoves` (an array of
+`{from, to}` pairs). When Escape is pressed, the list replays those moves in
+reverse via `visualModel.items.move()`, restoring items to their original
+positions without touching the backend model.
+
+### Key changes
+
+**`TaskListView`:**
+- `Keys.onReleased` detects `Qt.Key_Escape` while `draggingItem` is true.
+- Sets `dragCanceled = true` and replays `dragMoves` in reverse to undo the
+  visual reorder.
+- Resets drag state (`draggingItem = false`, clears indices and move list).
+- `onStartMove` now initialises `dragMoves = []` at drag start.
+- `onMoveItem` appends each `{from, to}` pair to `dragMoves`.
+- `onDraggingItemChanged` checks `dragCanceled` and skips `commitMove` when
+  the drag was cancelled.
