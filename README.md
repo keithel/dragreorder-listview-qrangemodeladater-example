@@ -9,7 +9,7 @@ It provides a minimal, practical example for developers looking to enable dynami
 - Animation of insertion point on drag, including logic to prevent improper
 moves due to animation.
 - Commit only happens once the item drag is complete.
-- **Drag cancellation:** Cancel drag operations via ESC key (desktop) or second finger press (touch devices). See [DRAG_CANCELLATION.md](docs/DRAG_CANCELLATION.md) for details.
+- Drag cancellation: Cancel drag operations via ESC key (desktop) or second finger press (touch devices). See [DRAG_CANCELLATION.md](docs/DRAG_CANCELLATION.md) for details.
 - QRangeModelAdapter usage: Showcases how to use the new adapter for efficient model/view integration.
 - Modular C++/QML structure: Clean separation between backend logic and QML UI.
 
