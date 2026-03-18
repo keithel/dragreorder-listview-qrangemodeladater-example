@@ -31,20 +31,26 @@ Item {
         id: listView
         anchors.fill: parent
 
+        function cancelDrag() {
+            if (!draggingItem)
+                return;
+            // Replay moves in reverse to restore original order
+            dragCanceled = true;
+            if (dragMoves && dragMoves.length > 0) {
+                for (let i = dragMoves.length - 1; i >= 0; --i) {
+                    let move = dragMoves[i];
+                    visualModel.items.move(move.to, move.from);
+                }
+            }
+            draggingItem = false;
+            dragSourceIndex = -1;
+            dragTargetIndex = -1;
+            dragMoves = [];
+        }
+
         Keys.onReleased: (event) => {
             if (draggingItem && event.key === Qt.Key_Escape) {
-                // Cancel drag: replay moves in reverse to restore original order
-                dragCanceled = true;
-                if (dragMoves && dragMoves.length > 0) {
-                    for (let i = dragMoves.length - 1; i >= 0; --i) {
-                        let move = dragMoves[i];
-                        visualModel.items.move(move.to, move.from);
-                    }
-                }
-                draggingItem = false;
-                dragSourceIndex = -1;
-                dragTargetIndex = -1;
-                dragMoves = [];
+                cancelDrag();
                 event.accepted = true;
             }
         }
@@ -90,6 +96,17 @@ Item {
 
             dragSourceIndex = -1
             dragTargetIndex = -1
+        }
+    }
+
+    // Cancel drag when a second finger touches the screen during a drag
+    MultiPointTouchArea {
+        anchors.fill: parent
+        // Only active while an item is being dragged
+        enabled: listView.draggingItem
+        onGestureStarted: (gesture) => {
+            gesture.grab();
+            listView.cancelDrag();
         }
     }
 }
