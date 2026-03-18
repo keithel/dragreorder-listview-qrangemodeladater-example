@@ -235,7 +235,7 @@ real-world scenarios).
 
 ---
 
-## Step 8 — Drag cancellation via Escape key (this commit)
+## Step 8 — Drag cancellation via Escape key
 
 **What's here:** Allow the user to cancel an in-progress drag by pressing <ESC>,
 restoring the list to its pre-drag order.
@@ -260,3 +260,21 @@ positions without touching the backend model.
 ### TaskDelegate changes:
 - Delegate now gates DropArea events on whether view.draggingItem is set to
   prevent any aborted drags when cancel is performed (<ESC> is pressed).
+
+---
+
+## Step 9 — Add drag cancellation using multitouch (this commit)
+
+**What's here:** Extend drag cancellation to touch devices.
+
+Press a second finger while dragging to cancel the drag and restore it to the
+original order.
+
+### How it works
+
+A `MultiPointTouchArea` overlaid on the drag handle is used to detect a second
+touch point during a drag. When it is triggered, it calls the same
+`cancelDrag()` function as the Escape key path.
+
+See [docs/DRAG_CANCELLATION.md](docs/DRAG_CANCELLATION.md) for a detailed
+explanation of both cancellation mechanisms.
