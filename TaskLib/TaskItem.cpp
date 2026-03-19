@@ -1,11 +1,16 @@
 #include "TaskItem.h"
 #include <QMetaObject>
+#include <QTimer>
 
-TaskItem::TaskItem(const QString &description, int priority, QObject *parent)
+TaskItem::TaskItem(const QString &description, int priority, QDateTime dueDate, QObject *parent)
     : QObject(parent)
     , m_description(description)
     , m_priority(priority)
+    , m_dueDate(dueDate)
+    , m_pastDueTimer(new QTimer(this))
 {
+    connect(m_pastDueTimer, &QTimer::timeout, this, &TaskItem::updatePastDue);
+    m_pastDueTimer->start(1000);
 }
 
 void TaskItem::setDescription(const QString &description)
@@ -26,6 +31,21 @@ void TaskItem::setPriority(int priority)
     emit priorityChanged();
 }
 
+void TaskItem::setDueDate(const QDateTime &newDueDate)
+{
+    if (m_dueDate == newDueDate)
+        return;
+
+    m_dueDate = newDueDate;
+    emit dueDateChanged();
+}
+
+void TaskItem::setDone(bool done)
+{
+    m_done = done;
+    emit doneChanged();
+}
+
 QHash<int, QByteArray> TaskItem::roleNames()
 {
     static const QHash<int, QByteArray> roleNames = []() {
@@ -36,6 +56,15 @@ QHash<int, QByteArray> TaskItem::roleNames()
         return roles;
     }();
     return roleNames;
+}
+
+void TaskItem::updatePastDue()
+{
+    bool pastDue = QDateTime::currentDateTime() > m_dueDate;
+    if(!m_done && pastDue != m_pastDue) {
+        m_pastDue = pastDue;
+        emit pastDueChanged();
+    }
 }
 
 QDebug operator<<(QDebug debug, const TaskItem &item)

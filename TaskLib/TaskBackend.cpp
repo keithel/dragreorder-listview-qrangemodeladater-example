@@ -6,15 +6,23 @@ static int nextPriority() {
     return ++priority;
 }
 
+QDateTime nowAddSecs(int secs) {
+    return QDateTime::currentDateTime().addMSecs(secs*1000);
+}
+static QDateTime sLastWeek(QDateTime::currentDateTime().addDays(-7));
+static QDateTime sTomorrow(QDateTime::currentDateTime().addDays(1));
+
+static QObject s_dataParent;
 std::vector<TaskItem*> s_data({
-    new TaskItem("Empty dishwasher", nextPriority()),
-    new TaskItem("Wash clothes", nextPriority()),
-    new TaskItem("Clear table", nextPriority()),
-    new TaskItem("Dry clothes", nextPriority()),
-    new TaskItem("Load dishwasher", nextPriority()),
-    new TaskItem("Fold clothes", nextPriority()),
-    new TaskItem("Run dishwasher", nextPriority()),
-    new TaskItem("Put clothes away", nextPriority())
+    new TaskItem("Empty dishwasher", nextPriority(), sTomorrow, &s_dataParent),
+    new TaskItem("Fill Med Planner", nextPriority(), sLastWeek, &s_dataParent),
+    new TaskItem("Wash clothes", nextPriority(), nowAddSecs(4), &s_dataParent),
+    new TaskItem("Clear table", nextPriority(), nowAddSecs(3), &s_dataParent),
+    new TaskItem("Dry clothes", nextPriority(), nowAddSecs(6), &s_dataParent),
+    new TaskItem("Load dishwasher", nextPriority(), sTomorrow, &s_dataParent),
+    new TaskItem("Fold clothes", nextPriority(), nowAddSecs(8), &s_dataParent),
+    new TaskItem("Run dishwasher", nextPriority(), sTomorrow, &s_dataParent),
+    new TaskItem("Put clothes away", nextPriority(), nowAddSecs(10), &s_dataParent)
 });
 
 TaskBackend::TaskBackend(QObject *parent)
@@ -23,6 +31,7 @@ TaskBackend::TaskBackend(QObject *parent)
     , m_adapter(std::ref(s_data))
 {
     m_adapter.model()->setRoleNames(TaskItem::roleNames());
+    m_adapter.model()->setAutoConnectPolicy(QRangeModel::AutoConnectPolicy::Full);
 }
 
 QAbstractItemModel* TaskBackend::taskModel() const

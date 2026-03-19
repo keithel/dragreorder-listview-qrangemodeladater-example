@@ -11,6 +11,7 @@ Item {
 
     DelegateModel {
         id: visualModel
+        delegateModelAccess: DelegateModel.ReadWrite
         delegate: TaskDelegate {
             width: ListView.view.width
             // Use itemsIndex from DelegateModel for the current visual position
