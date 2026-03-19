@@ -10,7 +10,7 @@ TaskItem::TaskItem(const QString &description, int priority, QDateTime dueDate, 
     , m_pastDueTimer(new QTimer(this))
 {
     connect(m_pastDueTimer, &QTimer::timeout, this, &TaskItem::updatePastDue);
-    m_pastDueTimer->start(1000);
+    updatePastDueTimer();
 }
 
 void TaskItem::setDescription(const QString &description)
@@ -38,6 +38,7 @@ void TaskItem::setDueDate(const QDateTime &newDueDate)
 
     m_dueDate = newDueDate;
     emit dueDateChanged();
+    updatePastDue();
 }
 
 void TaskItem::setDone(bool done)
@@ -60,10 +61,25 @@ QHash<int, QByteArray> TaskItem::roleNames()
 
 void TaskItem::updatePastDue()
 {
-    bool pastDue = QDateTime::currentDateTime() > m_dueDate;
+    bool pastDue = calculatePastDue();
     if(!m_done && pastDue != m_pastDue) {
         m_pastDue = pastDue;
         emit pastDueChanged();
+    }
+    if (pastDue) {
+        m_pastDueTimer->stop();
+    }
+}
+
+void TaskItem::updatePastDueTimer()
+{
+    m_pastDueTimer->setSingleShot(true);
+    if(calculatePastDue()) {
+        m_pastDueTimer->stop();
+    }
+    else {
+        int interval = QDateTime::currentDateTime().msecsTo(m_dueDate) + 500;
+        m_pastDueTimer->start(interval);
     }
 }
 

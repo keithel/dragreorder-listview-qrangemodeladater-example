@@ -48,12 +48,14 @@ signals:
 
 protected:
     void updatePastDue();
+    void updatePastDueTimer();
+    bool calculatePastDue() { return QDateTime::currentDateTime() > m_dueDate; }
 
 private:
     QString m_description;
     int m_priority;
     QDateTime m_dueDate;
-    bool m_pastDue = QDateTime::currentDateTime() > m_dueDate;
+    bool m_pastDue = calculatePastDue();
     bool m_done = false;
     QTimer *m_pastDueTimer;
 };

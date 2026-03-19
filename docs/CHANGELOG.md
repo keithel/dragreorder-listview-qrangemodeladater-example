@@ -5,9 +5,12 @@
 ### Due dates, past-due highlighting, and done toggling
 
 - Added `dueDate`, `pastDue`, and `done` properties to TaskItem.
-- A `QTimer` fires every second to recompute `pastDue` by comparing `QDateTime::currentDateTime()`
-  against `m_dueDate`, emitting `pastDueChanged` only when the value flips and the item is not
-  already done.
+- A `QTimer` computes `pastDue` by calling `updatePastDueTimer()`, which schedules a single-shot
+  timer to fire 500ms after the due date passes (the 500ms buffer prevents inconsistent marking
+  when items transition to past-due). The interval is calculated dynamically based on the time
+  remaining until `m_dueDate`, and the timer stops once the item becomes past-due. The
+  `updatePastDue()` slot is called both on timer timeout and when `dueDate` changes, emitting
+  `pastDueChanged` only when the value flips and the item is not already done.
 - Sample data in TaskBackend extended with representative due dates -- some in the past (overdue),
   some due tomorrow, and some just seconds away -- to exercise the new states. A
   `QObject s_dataParent` is used as the lifetime owner for the static items.
