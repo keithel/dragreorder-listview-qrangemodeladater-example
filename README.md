@@ -257,7 +257,7 @@ positions without touching the backend model.
 
 ---
 
-## Step 9 — Add drag cancellation using multitouch (this commit)
+## Step 9 — Add drag cancellation using multitouch
 
 **What's here:** Extend drag cancellation to touch devices.
 
@@ -272,3 +272,42 @@ touch point during a drag. When it is triggered, it calls the same
 
 See [docs/DRAG_CANCELLATION.md](docs/DRAG_CANCELLATION.md) for a detailed
 explanation of both cancellation mechanisms.
+
+---
+
+## Step 10 — Add dueDate feature with interactive done visualization. (this commit)
+
+**What's here:** Add due dates, past-due highlighting, and done toggling
+
+### TaskListView changes:
+- Added `dueDate`, `pastDue`, and `done` properties to TaskItem.
+- A `QTimer` fires when the item is past-due, emitting `pastDueChanged`.
+
+### TaskBackend changes:
+- Sample data in TaskBackend extended with representative due dates. Some tasks
+  are in the past (overdue), some are due tomorrow, and some are due just
+  seconds away. This is so the new states can be exercised and demoed.
+  `AutoConnectPolicy::Full` is set on the range model so property-change signals
+  propagate back to the model automatically.
+
+### TaskDelegate changes:
+- `RowLayout` is added to lay out the handle and task entry
+- background is now transparent.
+- The task label gains `font.strikeout` (driven by `done`) and turns red when
+  `pastDue` is true via a `State`/`PropertyChanges`. A `TapHandler` toggles
+  `done` on right-click (desktop) or long-press (touch screen).
+
+### TaskListView changes:
+- `delegateModelAccess: DelegateModel.ReadWrite` is set so the delegate can
+  write the `done` property through the `DelegateModel` to the underlying
+  `TaskItem`.
+
+### How it works
+
+A `QTimer` computes `pastDue` by calling `updatePastDueTimer()`, which schedules
+a single-shot timer to fire 500ms after the due date passes (the 500ms buffer
+prevents inconsistent marking when items transition to past-due). The interval
+is calculated dynamically based on the time remaining until `m_dueDate`, and the
+timer stops once the item becomes past-due. The `updatePastDue()` slot is called
+both on timer timeout and when `dueDate` changes, emitting `pastDueChanged` only
+when the value flips and the item is not already done.`

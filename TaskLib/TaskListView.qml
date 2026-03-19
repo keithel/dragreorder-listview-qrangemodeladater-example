@@ -9,6 +9,7 @@ Item {
 
     DelegateModel {
         id: visualModel
+        delegateModelAccess: DelegateModel.ReadWrite
         delegate: TaskDelegate {
             width: ListView.view.width
             visualIndex: DelegateModel.itemsIndex
