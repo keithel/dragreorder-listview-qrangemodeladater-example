@@ -1,10 +1,14 @@
 // TaskDelegate.qml
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 
 Item {
     id: delegateRoot
     required property string description
+    required property bool pastDue
+    required property bool done
+
     required property int index
     required property int visualIndex
     property ListView view: ListView.view
@@ -15,13 +19,17 @@ Item {
 
     height: 60
 
+    function toggleDone() {
+        done = !done;
+    }
+
     Rectangle {
         id: content
         width: delegateRoot.width
         height: delegateRoot.height
         parent: delegateRoot
         y: 0
-        color: "white"
+        color: "transparent"
         border.color: "#ccc"
 
         function cancelDrag() {
@@ -43,58 +51,82 @@ Item {
             }
         }
 
-        // Drag handle
-        Rectangle {
-            id: handle
-            width: 40
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            color: "#ddd"
-            Text {
-                text: "☰"
-                anchors.centerIn: parent
+        RowLayout {
+            anchors.fill: parent
+            spacing: 10
+
+            // 1. Grab Handle
+            Rectangle {
+                id: handle
+                Layout.preferredWidth: 40
+                Layout.fillHeight: true
+                color: "#ddd"
+                Text { text: "☰"; anchors.centerIn: parent }
+
+                DragHandler {
+                    id: dragArea
+                    property real heldY: 0
+
+                    onGrabChanged: (transition, point) => {
+                        if (transition === PointerDevice.GrabExclusive ||
+                            transition === PointerDevice.GrabPassive) {
+                            let contentItem = content.Window?.contentItem
+                            let globalPos = delegateRoot.mapToItem(
+                                contentItem ? contentItem : delegateRoot, 0, 0)
+                            heldY = globalPos.y;
+                            delegateRoot.startMove()
+                            delegateRoot.view.draggingItem = true
+                        }
+                        else {
+                            if (!delegateRoot.view.draggingItem) {
+                                // If listView is not dragging item on release,
+                                // cancel was performed and the item can still have
+                                // been dragged around. Return the item to its
+                                // proper y position.
+                                content.y = 0
+                            }
+                            delegateRoot.view.draggingItem = false
+                        }
+                    }
+
+                    target: content
+                    xAxis.enabled: false
+                    yAxis.enabled: true
+                    yAxis.minimum: 0
+                    yAxis.maximum: content.Window?.height ? content.Window.height - content.height : 10000
+                }
             }
 
-            DragHandler {
-                id: dragArea
-                property real heldY: 0
+            Label {
+                id: taskLabel
+                Layout.fillHeight: true
+                Layout.alignment: Qt.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+                text: delegateRoot.description
+                font.strikeout: delegateRoot.done
 
-                onGrabChanged: (transition, point) => {
-                    if (transition === PointerDevice.GrabExclusive ||
-                         transition === PointerDevice.GrabPassive) {
-                        let contentItem = content.Window?.contentItem
-                        let globalPos = delegateRoot.mapToItem(
-                            contentItem ? contentItem : delegateRoot, 0, 0)
-                        heldY = globalPos.y;
-                        delegateRoot.startMove()
-                        delegateRoot.ListView.view.draggingItem = true
-                    }
-                    else {
-                        if (!delegateRoot.view.draggingItem) {
-                            // If listView is not dragging item on release,
-                            // cancel was performed and the item can still have
-                            // been dragged around. Return the item to its
-                            // proper y position.
-                            content.y = 0
-                        }
-                        delegateRoot.view.draggingItem = false
+                states: State {
+                    when: delegateRoot.pastDue
+                    PropertyChanges {
+                        taskLabel.color: "red"
                     }
                 }
 
-                target: content
-                xAxis.enabled: false
-                yAxis.enabled: true
-                yAxis.minimum: 0
-                yAxis.maximum: content.Window?.height ? content.Window.height - content.height : 10000
+                TapHandler {
+                    id: touchHandler
+                    enabled: true
+                    acceptedButtons: Qt.AllButtons
+                    onTapped: (eventPoint, button) => {
+                        if (point.device.type !== PointerDevice.TouchScreen && button === Qt.RightButton)
+                            delegateRoot.toggleDone();
+                    }
+                    onLongPressed: {
+                        if (point.device.type === PointerDevice.TouchScreen)
+                            delegateRoot.toggleDone();
+                    }
+                }
             }
-        }
-
-        Label {
-            anchors.left: handle.right
-            anchors.leftMargin: 10
-            anchors.verticalCenter: parent.verticalCenter
-            text: delegateRoot.description
+            Item { Layout.fillWidth: true }
         }
 
         // Drag/Drop Logic
