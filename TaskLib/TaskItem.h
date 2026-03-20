@@ -36,8 +36,8 @@ public:
     void setDueDate(const QDateTime &newDueDate);
     void setDone(bool done);
 
-public:
-    static QHash<int, QByteArray> roleNames();
+// public:
+    // static QHash<int, QByteArray> roleNames();
 
 signals:
     void descriptionChanged();

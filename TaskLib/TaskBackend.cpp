@@ -30,7 +30,6 @@ TaskBackend::TaskBackend(QObject *parent)
     // Initialize with sample data
     , m_adapter(std::ref(s_data))
 {
-    m_adapter.model()->setRoleNames(TaskItem::roleNames());
     m_adapter.model()->setAutoConnectPolicy(QRangeModel::AutoConnectPolicy::Full);
 }
 

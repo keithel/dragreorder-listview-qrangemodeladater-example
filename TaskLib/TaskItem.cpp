@@ -47,17 +47,17 @@ void TaskItem::setDone(bool done)
     emit doneChanged();
 }
 
-QHash<int, QByteArray> TaskItem::roleNames()
-{
-    static const QHash<int, QByteArray> roleNames = []() {
-        QHash<int, QByteArray> roles;
-        const QMetaObject mo = TaskItem::staticMetaObject;
-        for(auto i = 0; i < mo.propertyCount(); i++)
-            roles.insert(i, mo.property(i).name());
-        return roles;
-    }();
-    return roleNames;
-}
+// QHash<int, QByteArray> TaskItem::roleNames()
+// {
+//     static const QHash<int, QByteArray> roleNames = []() {
+//         QHash<int, QByteArray> roles;
+//         const QMetaObject mo = TaskItem::staticMetaObject;
+//         for(auto i = 0; i < mo.propertyCount(); i++)
+//             roles.insert(i, mo.property(i).name());
+//         return roles;
+//     }();
+//     return roleNames;
+// }
 
 void TaskItem::updatePastDue()
 {
