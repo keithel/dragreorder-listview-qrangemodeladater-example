@@ -1,14 +1,23 @@
 // TaskListView.qml
 import QtQuick
-import QtQuick.Controls
+import QtQml.Models
 
-ListView {
+Item {
     id: root
+    property alias model: visualModel.model
 
-    // model is set from outside (e.g. Main.qml via TaskBackend.taskModel)
+    DelegateModel {
+        id: visualModel
+        delegate: TaskDelegate {
+            required property string modelData
+            width: ListView.view.width
+            display: modelData
+        }
+    }
 
-    delegate: ItemDelegate {
-        width: ListView.view.width
-        text: modelData
+    ListView {
+        id: listView
+        anchors.fill: parent
+        model: visualModel
     }
 }
