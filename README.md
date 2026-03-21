@@ -56,7 +56,7 @@ QML. No C++, no drag-and-drop. Establishes the two-module CMake layout.
 
 ---
 
-## Step 2 — C++ backend with QRangeModel (this commit)
+## Step 2 — C++ backend with QRangeModel
 
 **What's here:** the first C++ layer, focused entirely on `QRangeModel`.
 
@@ -69,3 +69,30 @@ QML. No C++, no drag-and-drop. Establishes the two-module CMake layout.
 
 The key takeaway for this step is how little code is needed to connect a plain
 C++ data structure to a QML `ListView` using `QRangeModel`.
+
+---
+
+## Step 3 — Modular delegate with DelegateModel (this commit)
+
+**What's here:** introducing `DelegateModel` for better item management and
+preparation for drag-and-drop.
+
+- Extract the delegate into a dedicated `TaskDelegate.qml` component, replacing
+  `ItemDelegate` with a custom `Item` containing a `Rectangle` and `Label`.
+- Wrap the `ListView` inside a `DelegateModel` in `TaskListView.qml`.
+
+**Why `DelegateModel`?** While not strictly required for simple display,
+`DelegateModel` provides critical benefits:
+
+1. **Item pooling & recycling:** `DelegateModel` manages the creation and
+   reuse of delegate instances, improving performance in large lists.
+2. **Visual state separation:** It maintains an intermediate *visual model*
+   between the data model and the `ListView`, allowing us to move items
+   visually and animate them *before* committing changes to the underlying
+   data.
+3. **Explicit move semantics:** The `move()` method lets us reorder visual items
+   in real time during drag operations, essential for the "live preview"
+   effect we'll add in later steps.
+
+This step sets up the structural foundation so that upcoming drag-and-drop
+features can be added cleanly to the delegate.

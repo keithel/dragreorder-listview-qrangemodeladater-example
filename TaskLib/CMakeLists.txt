@@ -7,5 +7,6 @@ qt_add_qml_module(TaskLib
         TaskBackend.h TaskBackend.cpp
     QML_FILES
         TaskListView.qml
+        TaskDelegate.qml
 )
 target_link_libraries(TaskLib PRIVATE Qt6::Quick Qt6::QuickControls2)
