@@ -49,17 +49,23 @@ will itself show you how to use it)
 
 ---
 
-## Step 1 — Simple QML-only list (this commit)
+## Step 1 — Simple QML-only list
 
-**What's here:** the bare minimum to display a task list in a Qt Quick
-`ApplicationWindow`.
+The bare minimum: a `ListView` with an inline `ListModel` defined entirely in
+QML. No C++, no drag-and-drop. Establishes the two-module CMake layout.
 
-- `TaskLib` is a QML-only module — no C++ sources at all.
-- `TaskListView.qml` is a plain `ListView` with an inline `ListModel` whose
-  items are defined directly in QML.
-- The delegate is a standard `ItemDelegate` from Qt Quick Controls.
-- There is no drag-and-drop.
+---
 
-This step establishes the project skeleton and verifies that the two-module
-CMake layout (`TaskLib` + `TaskApp`) builds and runs correctly before any
-complexity is added.
+## Step 2 — C++ backend with QRangeModel (this commit)
+
+**What's here:** the first C++ layer, focused entirely on `QRangeModel`.
+
+- `TaskBackend` is a `QObject`/`QML_ELEMENT` that exposes a `QRangeModel` built
+  from a QStringList holding the task descriptions. The model is passed
+  `std::ref(s_data)` so it reads live from the vector.
+- `Main.qml` instantiates `TaskBackend` and passes `backend.taskModel` to
+  `TaskListView`.
+- The delegate remains a plain `ItemDelegate` — no drag-and-drop yet.
+
+The key takeaway for this step is how little code is needed to connect a plain
+C++ data structure to a QML `ListView` using `QRangeModel`.

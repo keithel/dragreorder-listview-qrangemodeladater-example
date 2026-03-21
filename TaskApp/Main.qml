@@ -10,7 +10,12 @@ ApplicationWindow {
     visible: true
     title: "Task List"
 
+    TaskBackend {
+        id: backend
+    }
+
     TaskListView {
         anchors.fill: parent
+        model: backend.taskModel
     }
 }
