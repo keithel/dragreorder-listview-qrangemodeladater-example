@@ -14,6 +14,11 @@ Item {
             required property string modelData
             width: ListView.view.width
             display: modelData
+            visualIndex: DelegateModel.itemsIndex
+
+            onMoveItem: (from, to) => {
+                visualModel.items.move(from, to)
+            }
         }
     }
 
