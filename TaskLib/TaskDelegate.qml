@@ -16,8 +16,22 @@ Item {
         color: "white"
         border.color: "#ccc"
 
-        Label {
+        // Drag handle
+        Rectangle {
+            id: handle
+            width: 40
             anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            color: "#ddd"
+            Text {
+                text: "☰"
+                anchors.centerIn: parent
+            }
+        }
+
+        Label {
+            anchors.left: handle.right
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
             text: delegateRoot.display
