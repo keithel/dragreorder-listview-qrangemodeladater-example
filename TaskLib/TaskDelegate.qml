@@ -10,18 +10,31 @@ Item {
 
     required property string display
     required property int index
+    required property int visualIndex
     property ListView view: ListView.view
+    signal moveItem(int from, int to)
 
     Rectangle {
         id: content
-        anchors.fill: parent
+        width: delegateRoot.width
+        height: delegateRoot.height
+        parent: delegateRoot
+        y: 0
         color: "white"
         border.color: "#ccc"
 
         states: State {
             when: dragArea.held
+            ParentChange {
+                target: content
+                parent: content.Window.contentItem
+            }
             PropertyChanges {
-                content.color: "#eeeeee"
+                content {
+                    y: dragArea.heldY
+                    z: 100
+                    color: "#eeeeee"
+                }
             }
         }
 
@@ -42,8 +55,11 @@ Item {
                 id: dragArea
                 anchors.fill: parent
                 property bool held: false
+                property real heldY: 0
 
-                onPressed: {
+                onPressed: (mouse) => {
+                    let globalPos = delegateRoot.mapToItem(Window.contentItem, 0, 0)
+                    heldY = globalPos.y
                     held = true
                     delegateRoot.view.dragActive = true
                 }
@@ -51,6 +67,11 @@ Item {
                     held = false
                     delegateRoot.view.dragActive = false
                 }
+
+                drag.target: content
+                drag.axis: Drag.YAxis
+                drag.minimumY: 0
+                drag.maximumY: Window.height - content.height
             }
         }
 
@@ -59,6 +80,26 @@ Item {
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
             text: delegateRoot.display
+        }
+
+        // Drag/Drop Logic
+        Drag.active: dragArea.held
+        Drag.source: delegateRoot
+        Drag.hotSpot.x: width / 2
+        Drag.hotSpot.y: height / 2
+        Drag.keys: ["task-item"]
+    }
+
+    DropArea {
+        anchors.fill: parent
+        keys: ["task-item"]
+        onEntered: (drag) => {
+            let from = drag.source.visualIndex
+            let to = delegateRoot.visualIndex
+
+            if (from !== to) {
+                delegateRoot.moveItem(from, to)
+            }
         }
     }
 }

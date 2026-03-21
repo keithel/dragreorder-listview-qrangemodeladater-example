@@ -116,4 +116,28 @@ features can be added cleanly to the delegate.
 This shows the delegate structure we'll build upon, with the handle separated
 from the task content, and the foundation for recognizing drag gestures.
 
-In the next step we will add the actual dragging logic and Drag/Drop mechanism.
+---
+
+## Step 5 — Drag/Drop mechanism with item movement (this commit)
+
+**What's here:** full drag-and-drop interaction enabling item reordering.
+
+### TaskDelegate changes:
+- Enable `drag.target` on the `MouseArea` to allow Y-axis dragging.
+- Store the initial Y position in `heldY` to track the drag origin.
+- Reparent `content` to the window's root when held, using `ParentChange` in the
+  state, so the item renders above the list during drag.
+- Add `Drag` properties (`Drag.active`, `Drag.source`, `Drag.keys`) to
+  advertise the drag source.
+- Add a `DropArea` that receives drop events and emits `moveItem` signal to
+  communicate the reorder request.
+
+### TaskListView changes:
+- Expose `visualIndex` from `DelegateModel.itemsIndex` so each delegate knows
+  its current visual position.
+- Connect delegate's `moveItem` signal to call `visualModel.items.move()`,
+  which rearranges items in the visual model.
+
+At this point, dragging a handle visually moves the item in the list immediately,
+but the backend data model is not yet updated. The visual reordering follows the
+drag, creating an immediate but temporary effect.
