@@ -17,5 +17,6 @@ ApplicationWindow {
     TaskListView {
         anchors.fill: parent
         model: backend.taskModel
+        onMoveRequested: (from, to) => backend.dumpModel();
     }
 }

@@ -15,6 +15,8 @@ public:
 
     QAbstractItemModel* taskModel() const;
 
+    Q_INVOKABLE void dumpModel() const;
+
 private:
     QRangeModel m_model;
 };
