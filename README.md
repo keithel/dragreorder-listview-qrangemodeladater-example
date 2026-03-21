@@ -93,7 +93,7 @@ features can be added cleanly to the delegate.
 
 ---
 
-## Step 3 — Add drag handle visual (this commit)
+## Step 3 — Add drag handle visual
 
 **What's here:** visual preparation for drag interaction.
 
@@ -105,3 +105,19 @@ features can be added cleanly to the delegate.
 
 This shows the delegate structure we'll build upon, with the handle separated
 from the task content.
+
+---
+
+## Step 4 — Handle mouse press/release (this commit)
+
+**What's here:** basic mouse interaction and visual feedback.
+
+- Add a `MouseArea` over the drag handle to capture mouse events.
+- Introduce a `held` Property to track when the user has pressed down on the
+  handle.
+- Add a Qt Quick **State** that changes the item's color when `held` is true,
+  providing visual feedback.
+- Disable ListView interactivity when held.
+
+This establishes the foundation for recognizing drag gestures. In the next step,
+we'll add the actual dragging logic and Drag/Drop mechanism.

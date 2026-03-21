@@ -10,11 +10,20 @@ Item {
 
     required property string display
     required property int index
+    property ListView view: ListView.view
 
     Rectangle {
+        id: content
         anchors.fill: parent
         color: "white"
         border.color: "#ccc"
+
+        states: State {
+            when: dragArea.held
+            PropertyChanges {
+                content.color: "#eeeeee"
+            }
+        }
 
         // Drag handle
         Rectangle {
@@ -27,6 +36,21 @@ Item {
             Text {
                 text: "☰"
                 anchors.centerIn: parent
+            }
+
+            MouseArea {
+                id: dragArea
+                anchors.fill: parent
+                property bool held: false
+
+                onPressed: {
+                    held = true
+                    delegateRoot.view.dragActive = true
+                }
+                onReleased: {
+                    held = false
+                    delegateRoot.view.dragActive = false
+                }
             }
         }
 
