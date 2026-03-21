@@ -1,27 +1,35 @@
 #include "TaskBackend.h"
+#include <QDebug>
 
-static const QStringList s_data {
-    {"Buy groceries"},
-    {"Walk the dog"},
-    {"Empty dishwasher"},
-    {"Wash clothes"},
-    {"Clear table"},
-    {"Dry clothes"},
-    {"Load dishwasher"},
-    {"Fold clothes"},
-    {"Run dishwasher"},
-    {"Empty trash"}
-};
+static QObject s_dataParent;
+std::vector<TaskItem*> s_data({
+    new TaskItem("Buy groceries", &s_dataParent),
+    new TaskItem("Walk the dog", &s_dataParent),
+    new TaskItem("Empty dishwasher", &s_dataParent),
+    new TaskItem("Fill Med Planner", &s_dataParent),
+    new TaskItem("Wash clothes", &s_dataParent),
+    new TaskItem("Clear table", &s_dataParent),
+    new TaskItem("Dry clothes", &s_dataParent),
+    new TaskItem("Load dishwasher", &s_dataParent),
+    new TaskItem("Fold clothes", &s_dataParent),
+    new TaskItem("Run dishwasher", &s_dataParent),
+    new TaskItem("Empty trash", &s_dataParent)
+});
 
 TaskBackend::TaskBackend(QObject *parent)
     : QObject(parent)
-    // Pass by reference so the model reads from s_data.
-    // Do NOT modify s_data directly after this point.
-    , m_model(std::ref(s_data))
+    , m_adapter(std::ref(s_data))
 {
 }
 
 QAbstractItemModel* TaskBackend::taskModel() const
 {
-    return const_cast<QRangeModel*>(&m_model);
+    return m_adapter.model();
+}
+
+void TaskBackend::moveTask(int from, int to)
+{
+    qDebug().noquote().nospace() << "TaskBackend::moveTask(" << from << ", " << to << ")";
+    if (from == to) return;
+    m_adapter.moveRows(from, 1, to > from ? to + 1 : to);
 }
