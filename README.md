@@ -72,7 +72,7 @@ C++ data structure to a QML `ListView` using `QRangeModel`.
 
 ---
 
-## Step 3 — Modular delegate with DelegateModel (this commit)
+## Step 3 — Modular delegate with DelegateModel
 
 **What's here:** introducing `DelegateModel` for better item management and
 preparation for drag-and-drop.
@@ -96,3 +96,22 @@ preparation for drag-and-drop.
 
 This step sets up the structural foundation so that upcoming drag-and-drop
 features can be added cleanly to the delegate.
+
+---
+
+## Step 4 — Add a drag handle visual + mouse hold feedback
+
+**What's here:** Preparation for drag interaction with visual feedback
+
+- Add a drag handle Rectangle with drag glyph (☰) on the left side of each task
+  item to serve as the drag handle, visually indicating to the user that this
+  region is the hotspot for dragging the item.
+- Add a PointHandler to the drag handle to capture touch and mouse events.
+- Add a Qt Quick State that changes the item's color when the dragArea is
+  active, providing visual feedback.
+- Disable ListView interactivity when the dragArea is active.
+
+This shows the delegate structure we'll build upon, with the handle separated
+from the task content, and the foundation for recognizing drag gestures.
+
+In the next step we will add the actual dragging logic and Drag/Drop mechanism.

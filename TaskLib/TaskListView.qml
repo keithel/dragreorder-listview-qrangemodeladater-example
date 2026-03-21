@@ -17,7 +17,9 @@ Item {
 
     ListView {
         id: listView
+        property bool dragActive: false
         anchors.fill: parent
+        interactive: !dragActive
         model: visualModel
     }
 }
