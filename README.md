@@ -150,7 +150,7 @@ drag, creating an immediate but temporary effect.
 
 ---
 
-## Step 6 — Add animation to displaced items (this commit)
+## Step 6 — Add animation to displaced items
 
 **What's here:** smooth visual transitions when items are displaced during drag.
 
@@ -166,3 +166,51 @@ staying in their new order once the drag is released.
 
 **Note:** The backend C++ model is not yet synchronized with these visual changes.
 In the next step, we'll add the code to update the underlying data model on drop.
+
+---
+
+## Step 7 — Commit drop to the C++ model (this commit)
+
+**What's here:** wiring the drag-and-drop result back to the C++ data layer,
+and registering `TaskItem` properties as named model roles.
+
+### New: `TaskItem`
+Introduces `TaskItem`, a `QObject` subclass with a `description` Q_PROPERTY.
+This replaces the plain `QStringList` used in earlier steps. Each task is now
+a heap-allocated `TaskItem*` owned by a static s_dataParent that gets deleted
+on app termination.
+
+A `QRangeModel::RowOptions` specialization is added to declare `TaskItem` as
+a `MultiRoleItem`. This tells `QRangeModel` to introspect the `QObject`'s
+Q_PROPERTY list and register each one as a named model role, so QML can access
+`description` (and any future properties) by name rather than through a numeric
+role index:
+
+```cpp
+template<> struct QRangeModel::RowOptions<TaskItem>
+{
+    static constexpr auto rowCategory = QRangeModel::RowCategory::MultiRoleItem;
+};
+```
+
+### `TaskBackend` changes:
+- Replace `QRangeModel` + `QStringList` with
+  `QRangeModelAdapter<std::vector<TaskItem*>>`. `QRangeModelAdapter` wraps any
+  STL-compatible container and exposes the `Q_PROPERTY` values of the pointed-to
+  objects as model roles — including `description`.
+- Add `Q_INVOKABLE moveTask(int from, int to)` which calls
+  `m_adapter.moveRows()` to physically reorder elements in the vector.
+
+### `TaskListView` changes:
+- Introduce `moveRequested` signals that are used to update the backend model.
+- Connect the delegate's `onMoveItem` to both `visualModel.items.move()`
+  (visual) and `ListView.view.moveRequested` (backend), and propagate it up to
+  `root.moveRequested`.
+
+### `Main.qml` changes:
+- Connect `onMoveRequested` to `backend.moveTask(from, to)` so the drop is
+  committed to the underlying data. Right now this occurs as the item is dragged
+  through the list.
+
+After this step, the application is fully functional: items dragged in the
+list are reordered both visually and in the C++ model.
