@@ -28,5 +28,13 @@ Item {
         anchors.fill: parent
         interactive: !dragActive
         model: visualModel
+
+        displaced: Transition {
+            NumberAnimation {
+                properties: "y"
+                duration: 200
+                easing.type: Easing.OutQuad
+            }
+        }
     }
 }

@@ -124,7 +124,7 @@ we'll add the actual dragging logic and Drag/Drop mechanism.
 
 ---
 
-## Step 5 — Drag/Drop mechanism with item movement (this commit)
+## Step 5 — Drag/Drop mechanism with item movement
 
 **What's here:** full drag-and-drop interaction enabling item reordering.
 
@@ -147,3 +147,22 @@ we'll add the actual dragging logic and Drag/Drop mechanism.
 At this point, dragging a handle visually moves the item in the list immediately,
 but the backend data model is not yet updated. The visual reordering follows the
 drag, creating an immediate but temporary effect.
+
+---
+
+## Step 6 — Add animation to displaced items (this commit)
+
+**What's here:** smooth visual transitions when items are displaced during drag.
+
+- Add a `displaced: Transition` to the `ListView` with a `NumberAnimation` that
+  animates the `y` property over 200ms using an `OutQuad` easing curve.
+- When an item is moved, other items that shift position are automatically
+  animated to their new locations, rather than jumping instantly.
+
+This creates a polished user experience where items smoothly "flow" around the
+dragged item as it moves through the list. The application now has fully working
+visual drag-and-drop reordering, with the list items rearranging visually and
+staying in their new order once the drag is released.
+
+**Note:** The backend C++ model is not yet synchronized with these visual changes.
+In the next step, we'll add the code to update the underlying data model on drop.
