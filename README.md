@@ -275,7 +275,7 @@ explanation of both cancellation mechanisms.
 
 ---
 
-## Step 10 — Add dueDate feature with interactive done visualization. (this commit)
+## Step 10 — Add dueDate feature with interactive done visualization.
 
 **What's here:** Add due dates, past-due highlighting, and done toggling
 
@@ -311,3 +311,17 @@ is calculated dynamically based on the time remaining until `m_dueDate`, and the
 timer stops once the item becomes past-due. The `updatePastDue()` slot is called
 both on timer timeout and when `dueDate` changes, emitting `pastDueChanged` only
 when the value flips and the item is not already done.`
+
+---
+
+## Step 11 — Add animation to displaced items (this commit)
+
+**What's here:** Smooth visual transitions when items are displaced during drag.
+
+- Add a `displaced: Transition` to the `ListView` with a `NumberAnimation` that
+  animates the `y` property over 200ms using an `OutQuad` easing curve.
+- When an item is moved, other items that shift position are automatically
+  animated to their new locations, rather than jumping instantly.
+
+This creates a polished user experience where items smoothly "flow" around the
+dragged item as it moves through the list.

@@ -73,6 +73,14 @@ Item {
         interactive: !draggingItem
         model: visualModel
 
+        displaced: Transition {
+            NumberAnimation {
+                properties: "y"
+                duration: 200
+                easing.type: Easing.OutQuad
+            }
+        }
+
         Component.onCompleted: dragDropKey = generateId()
         onDraggingItemChanged: {
             if (draggingItem)
