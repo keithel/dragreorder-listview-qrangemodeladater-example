@@ -4,7 +4,7 @@ import QtQuick.Controls
 
 Item {
     id: delegateRoot
-    required property string display
+    required property string description
     required property int visualIndex
     property ListView view: ListView.view
     signal moveItem(int from, int to)
@@ -76,7 +76,7 @@ Item {
             anchors.left: handle.right
             anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
-            text: delegateRoot.display
+            text: delegateRoot.description
         }
 
         // Drag/Drop Logic

@@ -1,62 +1,39 @@
 #include "TaskBackend.h"
-#include <QStringList>
 #include <QDebug>
-
-static const QStringList s_data {
-    "Buy groceries",
-    "Walk the dog",
-    "Empty dishwasher",
-    "Wash clothes",
-    "Clear table",
-    "Dry clothes",
-    "Load dishwasher",
-    "Fold clothes",
-    "Run dishwasher",
-    "Empty trash"
-};
 
 TaskBackend::TaskBackend(QObject *parent)
     : QObject(parent)
-    // Pass by reference so the model reads from s_data.
-    // Do NOT modify s_data directly after this point.
-    , m_model(std::ref(s_data))
+    , m_data({
+        new TaskItem("Buy groceries", this),
+        new TaskItem("Walk the dog", this),
+        new TaskItem("Empty dishwasher", this),
+        new TaskItem("Fill Med Planner", this),
+        new TaskItem("Wash clothes", this),
+        new TaskItem("Clear table", this),
+        new TaskItem("Dry clothes", this),
+        new TaskItem("Load dishwasher", this),
+        new TaskItem("Fold clothes", this),
+        new TaskItem("Run dishwasher", this),
+        new TaskItem("Empty trash", this)
+    })
+    , m_adapter(std::ref(m_data))
 {
 }
 
 QAbstractItemModel* TaskBackend::taskModel() const
 {
-    return const_cast<QRangeModel*>(&m_model);
+    return m_adapter.model();
+}
+
+void TaskBackend::moveTask(int from, int to)
+{
+    qDebug().noquote().nospace() << "TaskBackend::moveTask(" << from << ", " << to << ")";
+    if (from == to) return;
+    m_adapter.moveRows(from, 1, to > from ? to + 1 : to);
+    dumpModel();
 }
 
 void TaskBackend::dumpModel() const
 {
-    int rows = m_model.rowCount();
-    int cols = m_model.columnCount();
-    if (cols > 1) {
-        qDebug() << "Unexpected number of columns!";
-        return;
-    }
-
-    QString modelStr;
-    QTextStream modelStream(&modelStr);
-    modelStream << "{ ";
-    for (auto r = 0; r < rows; r++) {
-        if (r > 0)
-            modelStream << ", ";
-
-        QModelIndex idx = m_model.index(r, 0);
-        if (!idx.isValid()) {
-            modelStream << "index-invalid";
-            continue;
-        }
-
-        if (idx.data().typeId() != QMetaType::QString) {
-            modelStream << "unsupported-type " << idx.data().typeName();
-            continue;
-        }
-
-        modelStream << "\"" << idx.data().toString() << "\"";
-    }
-    modelStream << " }";
-    qDebug().noquote() << modelStr;
+    qDebug() << m_adapter.range();
 }

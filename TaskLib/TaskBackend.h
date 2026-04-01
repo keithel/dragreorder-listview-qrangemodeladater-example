@@ -2,7 +2,9 @@
 
 #include <QObject>
 #include <QQmlEngine>
-#include <QRangeModel>
+#include <QRangeModelAdapter>
+#include <vector>
+#include <TaskItem.h>
 
 class TaskBackend : public QObject {
     Q_OBJECT
@@ -16,7 +18,9 @@ public:
     QAbstractItemModel* taskModel() const;
 
     Q_INVOKABLE void dumpModel() const;
+    Q_INVOKABLE void moveTask(int from, int to);
 
 private:
-    QRangeModel m_model;
+    std::vector<TaskItem *> m_data;
+    QRangeModelAdapter<std::vector<TaskItem*>> m_adapter;
 };
