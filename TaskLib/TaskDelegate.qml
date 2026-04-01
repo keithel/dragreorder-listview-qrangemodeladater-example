@@ -5,8 +5,11 @@ import QtQuick.Controls
 Item {
     id: delegateRoot
     required property string description
+    required property int index
     required property int visualIndex
     property ListView view: ListView.view
+
+    signal startMove()
     signal moveItem(int from, int to)
 
     height: 60
@@ -24,7 +27,7 @@ Item {
             when: dragArea.active
             ParentChange {
                 target: content
-                parent: content.Window.contentItem
+                parent: content.Window?.contentItem ? content.Window.contentItem : content.parent
             }
             PropertyChanges {
                 content {
@@ -55,12 +58,15 @@ Item {
                 onGrabChanged: (transition, point) => {
                     if (transition === PointerDevice.GrabExclusive ||
                          transition === PointerDevice.GrabPassive) {
-                        delegateRoot.view.dragActive = true;
-                        let globalPos = delegateRoot.mapToItem(delegateRoot.Window.contentItem, 0, 0);
+                        let contentItem = content.Window?.contentItem
+                        let globalPos = delegateRoot.mapToItem(
+                            contentItem ? contentItem : delegateRoot, 0, 0)
                         heldY = globalPos.y;
+                        delegateRoot.startMove()
+                        delegateRoot.ListView.view.draggingItem = true
                     }
                     else {
-                        delegateRoot.view.dragActive = false;
+                        delegateRoot.view.draggingItem = false
                     }
                 }
 
@@ -68,7 +74,7 @@ Item {
                 xAxis.enabled: false
                 yAxis.enabled: true
                 yAxis.minimum: 0
-                yAxis.maximum: delegateRoot.Window.height - content.height
+                yAxis.maximum: content.Window?.height ? content.Window.height - content.height : 10000
             }
         }
 
@@ -84,16 +90,16 @@ Item {
         Drag.source: delegateRoot
         Drag.hotSpot.x: width / 2
         Drag.hotSpot.y: height / 2
-        Drag.keys: ["task-item"]
+        Drag.keys: [delegateRoot.view.dragDropKey]
     }
 
     DropArea {
         anchors.fill: parent
-        keys: ["task-item"]
+        keys: [delegateRoot.view.dragDropKey]
         onEntered: (drag) => {
             let from = drag.source.visualIndex
             let to = delegateRoot.visualIndex
-
+            console.log("DropArea", to, "entered by index", from)
             if (from !== to) {
                 delegateRoot.moveItem(from, to)
             }
